@@ -83,7 +83,7 @@ struct SettingsView: View {
 
                         Button("Reset to Default") {
                             stopRecording()
-                            settings.hotkeyKeyCode = UInt32(kVK_ANSI_Grave)
+                            settings.hotkeyKeyCode = UInt32(kVK_ForwardDelete)
                             settings.hotkeyModifiers = UInt32(cmdKey | shiftKey)
                         }
                     }

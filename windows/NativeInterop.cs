@@ -166,7 +166,7 @@ public static class NativeInterop
             0x09 => "Tab",
             0x0D => "Enter",
             0x08 => "Backspace",
-            0x2E => "Del",
+            0x2E => "Supr",
             0x1B => "Esc",
             0x70 => "F1", 0x71 => "F2", 0x72 => "F3", 0x73 => "F4",
             0x74 => "F5", 0x75 => "F6", 0x76 => "F7", 0x77 => "F8",

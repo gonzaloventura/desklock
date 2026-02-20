@@ -8,13 +8,15 @@ public partial class SettingsWindow : Window
 {
     private readonly AppSettings _settings;
     private bool _isRecording;
+    private bool _initialized;
 
     public SettingsWindow(AppSettings settings)
     {
-        InitializeComponent();
         _settings = settings;
+        InitializeComponent();
         LoadFromSettings();
         PreviewKeyDown += OnPreviewKeyDown;
+        _initialized = true;
     }
 
     private void LoadFromSettings()
@@ -50,7 +52,7 @@ public partial class SettingsWindow : Window
     private void ResetShortcut_Click(object sender, RoutedEventArgs e)
     {
         StopRecording();
-        _settings.HotkeyVirtualKey = 0xC0;
+        _settings.HotkeyVirtualKey = 0x2E;
         _settings.HotkeyCtrl = true;
         _settings.HotkeyShift = true;
         _settings.HotkeyAlt = false;
@@ -122,12 +124,14 @@ public partial class SettingsWindow : Window
 
     private void BgColorBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
+        if (!_initialized) return;
         _settings.BackgroundColor = BgColorBox.Text;
         _settings.Save();
     }
 
     private void TxtColorBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
+        if (!_initialized) return;
         _settings.TextColor = TxtColorBox.Text;
         _settings.Save();
     }
@@ -156,7 +160,7 @@ public partial class SettingsWindow : Window
 
     private void FontSizeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (FontSizeLabel == null) return;
+        if (!_initialized || FontSizeLabel == null) return;
         FontSizeLabel.Text = $"{(int)e.NewValue}";
         _settings.FontSize = e.NewValue;
         _settings.Save();
@@ -174,24 +178,28 @@ public partial class SettingsWindow : Window
 
     private void LockTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
+        if (!_initialized) return;
         _settings.LockText = LockTextBox.Text;
         _settings.Save();
     }
 
     private void SubtitleBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
+        if (!_initialized) return;
         _settings.SubtitleText = SubtitleBox.Text;
         _settings.Save();
     }
 
     private void ShowClockCheck_Changed(object sender, RoutedEventArgs e)
     {
+        if (!_initialized) return;
         _settings.ShowClock = ShowClockCheck.IsChecked == true;
         _settings.Save();
     }
 
     private void ShowHintCheck_Changed(object sender, RoutedEventArgs e)
     {
+        if (!_initialized) return;
         _settings.ShowUnlockHint = ShowHintCheck.IsChecked == true;
         _settings.Save();
     }
@@ -223,7 +231,7 @@ public partial class SettingsWindow : Window
 
     private void ImageOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (OpacityLabel == null) return;
+        if (!_initialized || OpacityLabel == null) return;
         OpacityLabel.Text = $"{(int)(e.NewValue * 100)}%";
         _settings.BackgroundImageOpacity = e.NewValue;
         _settings.Save();

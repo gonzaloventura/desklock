@@ -67,8 +67,8 @@ class SettingsManager: ObservableObject {
         self.showClock = defaults.object(forKey: "showClock") as? Bool ?? true
         self.showUnlockHint = defaults.object(forKey: "showUnlockHint") as? Bool ?? true
 
-        // Default: Cmd+Shift+| (key left of 1)
-        let defaultKeyCode = UInt32(kVK_ANSI_Grave)
+        // Default: Cmd+Shift+Supr (Forward Delete)
+        let defaultKeyCode = UInt32(kVK_ForwardDelete)
         let defaultModifiers = UInt32(cmdKey | shiftKey)
         self.hotkeyKeyCode = defaults.object(forKey: "hotkeyKeyCode") as? UInt32 ?? defaultKeyCode
         self.hotkeyModifiers = defaults.object(forKey: "hotkeyModifiers") as? UInt32 ?? defaultModifiers
@@ -84,7 +84,7 @@ class SettingsManager: ObservableObject {
         backgroundImageOpacity = 0.3
         showClock = true
         showUnlockHint = true
-        hotkeyKeyCode = UInt32(kVK_ANSI_Grave)
+        hotkeyKeyCode = UInt32(kVK_ForwardDelete)
         hotkeyModifiers = UInt32(cmdKey | shiftKey)
     }
 
@@ -134,7 +134,7 @@ class SettingsManager: ObservableObject {
             0x25: "L", 0x26: "J", 0x27: "'", 0x28: "K", 0x29: ";",
             0x2A: "\\", 0x2B: ",", 0x2C: "/", 0x2D: "N", 0x2E: "M",
             0x2F: ".", 0x24: "Return", 0x30: "Tab", 0x31: "Space",
-            0x32: "|", 0x33: "Delete", 0x35: "Esc",
+            0x32: "|", 0x33: "Delete", 0x35: "Esc", 0x75: "Supr",
             0x7A: "F1", 0x78: "F2", 0x63: "F3", 0x76: "F4",
             0x60: "F5", 0x61: "F6", 0x62: "F7", 0x64: "F8",
             0x65: "F9", 0x6D: "F10", 0x67: "F11", 0x6F: "F12",

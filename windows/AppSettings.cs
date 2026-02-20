@@ -15,7 +15,7 @@ public class AppSettings
     public double BackgroundImageOpacity { get; set; } = 0.3;
     public bool ShowClock { get; set; } = true;
     public bool ShowUnlockHint { get; set; } = true;
-    public int HotkeyVirtualKey { get; set; } = 0xC0; // VK_OEM_3 (` / | key left of 1)
+    public int HotkeyVirtualKey { get; set; } = 0x2E; // VK_DELETE (Supr)
     public bool HotkeyCtrl { get; set; } = true;
     public bool HotkeyShift { get; set; } = true;
     public bool HotkeyAlt { get; set; }
@@ -76,7 +76,7 @@ public class AppSettings
         BackgroundImageOpacity = 0.3;
         ShowClock = true;
         ShowUnlockHint = true;
-        HotkeyVirtualKey = 0xC0;
+        HotkeyVirtualKey = 0x2E;
         HotkeyCtrl = true;
         HotkeyShift = true;
         HotkeyAlt = false;
