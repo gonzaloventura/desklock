@@ -18,18 +18,20 @@ jobs:
           chmod +x build.sh
           ./build.sh
 
-      - name: Create DMG
+      - name: Codesign app
         run: |
-          hdiutil create -volname "DeskLock" \
-            -srcfolder build/DeskLock.app \
-            -ov -format UDZO \
-            build/DeskLock-macOS.dmg
+          codesign --force --deep -s - build/DeskLock.app
+
+      - name: Create ZIP
+        run: |
+          cd build
+          ditto -c -k --sequesterRsrc --keepParent DeskLock.app DeskLock-macOS.zip
 
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: DeskLock-macOS
-          path: build/DeskLock-macOS.dmg
+          path: build/DeskLock-macOS.zip
 
   build-windows:
     runs-on: windows-latest
@@ -44,7 +46,7 @@ jobs:
       - name: Publish Windows executable
         run: |
           cd windows
-          dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o ../build/windows
+          dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -p:TrimMode=partial -o ../build/windows
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
@@ -68,6 +70,30 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            artifacts/DeskLock-macOS/DeskLock-macOS.dmg
+            artifacts/DeskLock-macOS/DeskLock-macOS.zip
             artifacts/DeskLock-Windows/DeskLock.exe
+          body: |
+            ## Download
+
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | **macOS** | `DeskLock-macOS.zip` | Unzip, then right-click > Open the first time |
+            | **Windows** | `DeskLock.exe` | Run directly. Click "More info" > "Run anyway" if SmartScreen appears |
+
+            ### macOS first run
+            macOS blocks unsigned apps by default. After downloading:
+            1. Unzip `DeskLock-macOS.zip`
+            2. Move `DeskLock.app` to Applications
+            3. **Right-click** the app > **Open** (not double-click)
+            4. Click **Open** in the dialog
+            5. Grant **Accessibility** permissions when prompted
+
+            Or run this in Terminal:
+            ```
+            xattr -cr /Applications/DeskLock.app && open /Applications/DeskLock.app
+            ```
+
+            ### Windows first run
+            1. Run `DeskLock.exe`
+            2. If SmartScreen appears: click **More info** > **Run anyway**
           generate_release_notes: true
