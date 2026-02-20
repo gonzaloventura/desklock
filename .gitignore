@@ -1,0 +1,20 @@
+# macOS build
+build/
+*.app
+
+# Windows build
+windows/bin/
+windows/obj/
+windows/publish/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vs/
+.vscode/
+*.xcodeproj/
+*.xcworkspace/
+*.user
+*.suo

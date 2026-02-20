@@ -1,0 +1,68 @@
+<Window x:Class="DeskLock.LockOverlay"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Cursor="None">
+
+    <Grid x:Name="RootGrid">
+        <!-- Background color -->
+        <Rectangle x:Name="BackgroundRect" Fill="#0D0D1F" />
+
+        <!-- Background image -->
+        <Image x:Name="BackgroundImage"
+               Stretch="UniformToFill"
+               Opacity="0.3"
+               Visibility="Collapsed" />
+
+        <!-- Content -->
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <!-- Lock icon -->
+            <TextBlock Text="&#xE72E;"
+                       FontFamily="Segoe MDL2 Assets"
+                       FontSize="56"
+                       HorizontalAlignment="Center"
+                       x:Name="LockIcon" />
+
+            <!-- Main text -->
+            <TextBlock x:Name="LockTextBlock"
+                       Text="DESK LOCKED"
+                       FontSize="72"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Margin="0,24,0,0">
+                <TextBlock.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="4" Opacity="0.5" />
+                </TextBlock.Effect>
+            </TextBlock>
+
+            <!-- Subtitle -->
+            <TextBlock x:Name="SubtitleBlock"
+                       FontSize="20"
+                       FontWeight="Light"
+                       HorizontalAlignment="Center"
+                       Margin="0,12,0,0"
+                       Visibility="Collapsed" />
+
+            <!-- Clock -->
+            <TextBlock x:Name="ClockBlock"
+                       FontSize="42"
+                       FontWeight="UltraLight"
+                       FontFamily="Consolas"
+                       HorizontalAlignment="Center"
+                       Margin="0,24,0,0" />
+        </StackPanel>
+
+        <!-- Unlock hint -->
+        <TextBlock x:Name="HintBlock"
+                   FontSize="14"
+                   FontWeight="Medium"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,48" />
+    </Grid>
+</Window>
