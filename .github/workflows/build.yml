@@ -43,16 +43,19 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
-      - name: Publish Windows executable
+      - name: Publish Windows
         run: |
           cd windows
-          dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o ../build/windows
+          dotnet publish -c Release -r win-x64 --self-contained -o ../build/windows
+
+      - name: Create Windows ZIP
+        run: Compress-Archive -Path build/windows/* -DestinationPath build/DeskLock-Windows.zip
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: DeskLock-Windows
-          path: build/windows/DeskLock.exe
+          path: build/DeskLock-Windows.zip
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -71,14 +74,14 @@ jobs:
         with:
           files: |
             artifacts/DeskLock-macOS/DeskLock-macOS.zip
-            artifacts/DeskLock-Windows/DeskLock.exe
+            artifacts/DeskLock-Windows/DeskLock-Windows.zip
           body: |
             ## Download
 
             | Platform | File | Notes |
             |----------|------|-------|
             | **macOS** | `DeskLock-macOS.zip` | Unzip, then right-click > Open the first time |
-            | **Windows** | `DeskLock.exe` | Run directly. Click "More info" > "Run anyway" if SmartScreen appears |
+            | **Windows** | `DeskLock-Windows.zip` | Unzip, run `DeskLock.exe` inside the folder |
 
             ### macOS first run
             macOS blocks unsigned apps by default. After downloading:
@@ -94,6 +97,7 @@ jobs:
             ```
 
             ### Windows first run
-            1. Run `DeskLock.exe`
-            2. If SmartScreen appears: click **More info** > **Run anyway**
+            1. Unzip `DeskLock-Windows.zip` to a folder
+            2. Run `DeskLock.exe` from that folder
+            3. If SmartScreen appears: click **More info** > **Run anyway**
           generate_release_notes: true

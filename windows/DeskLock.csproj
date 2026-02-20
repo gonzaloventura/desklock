@@ -8,5 +8,6 @@
     <AssemblyName>DeskLock</AssemblyName>
     <Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <StartupObject>DeskLock.Program</StartupObject>
   </PropertyGroup>
 </Project>
