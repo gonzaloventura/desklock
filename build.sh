@@ -14,8 +14,11 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$APP_BUNDLE/Contents/MacOS"
 mkdir -p "$APP_BUNDLE/Contents/Resources"
 
-# Copy Info.plist
+# Copy Info.plist and icon
 cp Resources/Info.plist "$APP_BUNDLE/Contents/"
+if [ -f Resources/AppIcon.icns ]; then
+    cp Resources/AppIcon.icns "$APP_BUNDLE/Contents/Resources/"
+fi
 
 # Detect architecture — build universal if both are available
 ARCH=$(uname -m)
