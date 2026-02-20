@@ -46,7 +46,7 @@ jobs:
       - name: Publish Windows executable
         run: |
           cd windows
-          dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -p:TrimMode=partial -o ../build/windows
+          dotnet publish -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o ../build/windows
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4

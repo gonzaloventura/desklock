@@ -7,5 +7,6 @@
     <RootNamespace>DeskLock</RootNamespace>
     <AssemblyName>DeskLock</AssemblyName>
     <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 </Project>

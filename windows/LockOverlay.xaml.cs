@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -12,6 +13,12 @@ public partial class LockOverlay : Window
 {
     private readonly DispatcherTimer _clockTimer;
 
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+    [DllImport("shcore.dll")]
+    private static extern int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
     public LockOverlay()
     {
         InitializeComponent();
@@ -21,7 +28,6 @@ public partial class LockOverlay : Window
 
     public void ApplySettings(AppSettings settings)
     {
-        // Background color
         try
         {
             BackgroundRect.Fill = new SolidColorBrush(
@@ -29,26 +35,21 @@ public partial class LockOverlay : Window
         }
         catch { BackgroundRect.Fill = new SolidColorBrush(Color.FromRgb(13, 13, 31)); }
 
-        // Text color
         Brush textBrush;
         try { textBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(settings.TextColor)); }
         catch { textBrush = Brushes.White; }
 
-        LockIcon.Foreground = new SolidColorBrush(
-            SetOpacity((textBrush as SolidColorBrush)!.Color, 0.6));
+        var textColor = (textBrush as SolidColorBrush)!.Color;
+
+        LockIcon.Foreground = new SolidColorBrush(SetOpacity(textColor, 0.6));
         LockTextBlock.Foreground = textBrush;
         LockTextBlock.FontSize = settings.FontSize;
         LockTextBlock.Text = settings.LockText;
 
-        // Character spacing (tracking)
-        LockTextBlock.SetValue(TextOptions.TextFormattingModeProperty, TextFormattingMode.Ideal);
-
-        // Subtitle
         if (!string.IsNullOrWhiteSpace(settings.SubtitleText))
         {
             SubtitleBlock.Text = settings.SubtitleText;
-            SubtitleBlock.Foreground = new SolidColorBrush(
-                SetOpacity((textBrush as SolidColorBrush)!.Color, 0.6));
+            SubtitleBlock.Foreground = new SolidColorBrush(SetOpacity(textColor, 0.6));
             SubtitleBlock.Visibility = Visibility.Visible;
         }
         else
@@ -56,11 +57,9 @@ public partial class LockOverlay : Window
             SubtitleBlock.Visibility = Visibility.Collapsed;
         }
 
-        // Clock
         if (settings.ShowClock)
         {
-            ClockBlock.Foreground = new SolidColorBrush(
-                SetOpacity((textBrush as SolidColorBrush)!.Color, 0.5));
+            ClockBlock.Foreground = new SolidColorBrush(SetOpacity(textColor, 0.5));
             ClockBlock.Visibility = Visibility.Visible;
             UpdateClock();
         }
@@ -69,12 +68,10 @@ public partial class LockOverlay : Window
             ClockBlock.Visibility = Visibility.Collapsed;
         }
 
-        // Hint
         if (settings.ShowUnlockHint)
         {
             HintBlock.Text = $"Press  {NativeInterop.GetHotkeyDisplayString()}  to unlock";
-            HintBlock.Foreground = new SolidColorBrush(
-                SetOpacity((textBrush as SolidColorBrush)!.Color, 0.25));
+            HintBlock.Foreground = new SolidColorBrush(SetOpacity(textColor, 0.25));
             HintBlock.Visibility = Visibility.Visible;
         }
         else
@@ -82,7 +79,6 @@ public partial class LockOverlay : Window
             HintBlock.Visibility = Visibility.Collapsed;
         }
 
-        // Background image
         if (!string.IsNullOrEmpty(settings.BackgroundImagePath) && File.Exists(settings.BackgroundImagePath))
         {
             try
@@ -108,12 +104,33 @@ public partial class LockOverlay : Window
         var screen = System.Windows.Forms.Screen.PrimaryScreen!;
         var bounds = screen.Bounds;
 
-        // Convert physical pixels to WPF logical units
-        var dpiScale = VisualTreeHelper.GetDpi(this);
-        Left = bounds.Left / dpiScale.DpiScaleX;
-        Top = bounds.Top / dpiScale.DpiScaleY;
-        Width = bounds.Width / dpiScale.DpiScaleX;
-        Height = bounds.Height / dpiScale.DpiScaleY;
+        // Get DPI scale safely
+        double scaleX = 1.0, scaleY = 1.0;
+        try
+        {
+            var source = PresentationSource.FromVisual(this);
+            if (source?.CompositionTarget != null)
+            {
+                scaleX = source.CompositionTarget.TransformToDevice.M11;
+                scaleY = source.CompositionTarget.TransformToDevice.M22;
+            }
+            else
+            {
+                // Window not yet shown — query monitor DPI directly
+                var hMonitor = MonitorFromWindow(IntPtr.Zero, 1); // MONITOR_DEFAULTTOPRIMARY
+                if (GetDpiForMonitor(hMonitor, 0, out uint dpiX, out uint dpiY) == 0)
+                {
+                    scaleX = dpiX / 96.0;
+                    scaleY = dpiY / 96.0;
+                }
+            }
+        }
+        catch { /* fallback to 1.0 */ }
+
+        Left = bounds.Left / scaleX;
+        Top = bounds.Top / scaleY;
+        Width = bounds.Width / scaleX;
+        Height = bounds.Height / scaleY;
 
         Opacity = 0;
         Show();
@@ -122,7 +139,6 @@ public partial class LockOverlay : Window
 
         _clockTimer.Start();
 
-        // Fade in
         var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300))
         {
             EasingFunction = new QuadraticEase()

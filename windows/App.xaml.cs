@@ -20,6 +20,21 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Global error handling
+        DispatcherUnhandledException += (_, args) =>
+        {
+            MessageBox.Show($"DeskLock error:\n{args.Exception.Message}\n\n{args.Exception.StackTrace}",
+                "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+        };
+
+        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            MessageBox.Show($"DeskLock fatal error:\n{ex?.Message}\n\n{ex?.StackTrace}",
+                "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+
         _singleInstanceMutex = new Mutex(true, "DeskLock_SingleInstance", out bool isNew);
         if (!isNew)
         {
