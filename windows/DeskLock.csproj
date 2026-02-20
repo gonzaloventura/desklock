@@ -6,7 +6,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>DeskLock</RootNamespace>
     <AssemblyName>DeskLock</AssemblyName>
-    <ApplicationIcon>lock.ico</ApplicationIcon>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>
