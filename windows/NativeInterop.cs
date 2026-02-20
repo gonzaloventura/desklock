@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace DeskLock;
@@ -71,9 +70,8 @@ public static class NativeInterop
         _keyboardProc = KeyboardHookCallback;
         _mouseProc = MouseHookCallback;
 
-        using var process = Process.GetCurrentProcess();
-        using var module = process.MainModule!;
-        var hModule = GetModuleHandle(module.ModuleName);
+        // GetModuleHandle(null) returns current exe handle — works with single-file publish
+        var hModule = GetModuleHandle(null);
 
         _keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, _keyboardProc, hModule, 0);
         _mouseHook = SetWindowsHookEx(WH_MOUSE_LL, _mouseProc, hModule, 0);

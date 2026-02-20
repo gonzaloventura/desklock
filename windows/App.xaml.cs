@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Threading;
@@ -16,40 +17,73 @@ public partial class App : Application
     private bool _isLocked;
     private DispatcherTimer? _focusTimer;
 
+    private static readonly string LogFile = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "DeskLock", "error.log");
+
+    private static void Log(string msg)
+    {
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(LogFile)!);
+            File.AppendAllText(LogFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {msg}\n");
+        }
+        catch { }
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
-        base.OnStartup(e);
-
-        // Global error handling
-        DispatcherUnhandledException += (_, args) =>
+        try
         {
-            MessageBox.Show($"DeskLock error:\n{args.Exception.Message}\n\n{args.Exception.StackTrace}",
-                "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            args.Handled = true;
-        };
+            base.OnStartup(e);
+            Log("Starting DeskLock...");
 
-        AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-        {
-            var ex = args.ExceptionObject as Exception;
-            MessageBox.Show($"DeskLock fatal error:\n{ex?.Message}\n\n{ex?.StackTrace}",
-                "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        };
+            DispatcherUnhandledException += (_, args) =>
+            {
+                Log($"Unhandled: {args.Exception}");
+                MessageBox.Show($"DeskLock error:\n{args.Exception.Message}",
+                    "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                args.Handled = true;
+            };
 
-        _singleInstanceMutex = new Mutex(true, "DeskLock_SingleInstance", out bool isNew);
-        if (!isNew)
-        {
-            MessageBox.Show("DeskLock is already running.", "DeskLock",
-                MessageBoxButton.OK, MessageBoxImage.Information);
-            Shutdown();
-            return;
+            AppDomain.CurrentDomain.UnhandledException += (_, args) =>
+            {
+                var ex = args.ExceptionObject as Exception;
+                Log($"Fatal: {ex}");
+                MessageBox.Show($"DeskLock fatal error:\n{ex?.Message}",
+                    "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            };
+
+            _singleInstanceMutex = new Mutex(true, "DeskLock_SingleInstance", out bool isNew);
+            if (!isNew)
+            {
+                Log("Already running, exiting.");
+                MessageBox.Show("DeskLock is already running.", "DeskLock",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                Shutdown();
+                return;
+            }
+
+            Log("Loading settings...");
+            _settings = AppSettings.Load();
+            _settings.ApplyToNativeInterop();
+
+            Log("Setting up tray icon...");
+            SetupTrayIcon();
+
+            Log("Installing hooks...");
+            NativeInterop.OnToggleLock += ToggleLock;
+            NativeInterop.InstallHooks();
+
+            Log("DeskLock started successfully.");
         }
-
-        _settings = AppSettings.Load();
-        _settings.ApplyToNativeInterop();
-
-        SetupTrayIcon();
-        NativeInterop.OnToggleLock += ToggleLock;
-        NativeInterop.InstallHooks();
+        catch (Exception ex)
+        {
+            Log($"Startup crash: {ex}");
+            MessageBox.Show($"DeskLock failed to start:\n\n{ex.Message}\n\n{ex.StackTrace}",
+                "DeskLock Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
+        }
     }
 
     protected override void OnExit(ExitEventArgs e)
