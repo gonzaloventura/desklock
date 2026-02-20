@@ -51,11 +51,18 @@ jobs:
       - name: Create Windows ZIP
         run: Compress-Archive -Path build/windows/* -DestinationPath build/DeskLock-Windows.zip
 
+      - name: Build Installer
+        run: |
+          choco install innosetup -y --no-progress
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" windows\installer.iss
+
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: DeskLock-Windows
-          path: build/DeskLock-Windows.zip
+          path: |
+            build/DeskLock-Windows.zip
+            build/DeskLock-Setup.exe
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -74,6 +81,7 @@ jobs:
         with:
           files: |
             artifacts/DeskLock-macOS/DeskLock-macOS.zip
+            artifacts/DeskLock-Windows/DeskLock-Setup.exe
             artifacts/DeskLock-Windows/DeskLock-Windows.zip
           body: |
             ## Download
@@ -81,7 +89,8 @@ jobs:
             | Platform | File | Notes |
             |----------|------|-------|
             | **macOS** | `DeskLock-macOS.zip` | Unzip, then right-click > Open the first time |
-            | **Windows** | `DeskLock-Windows.zip` | Unzip, run `DeskLock.exe` inside the folder |
+            | **Windows** | `DeskLock-Setup.exe` | Run installer (recommended) |
+            | **Windows** | `DeskLock-Windows.zip` | Portable version — unzip and run |
 
             ### macOS first run
             macOS blocks unsigned apps by default. After downloading:
@@ -97,7 +106,7 @@ jobs:
             ```
 
             ### Windows first run
-            1. Unzip `DeskLock-Windows.zip` to a folder
-            2. Run `DeskLock.exe` from that folder
-            3. If SmartScreen appears: click **More info** > **Run anyway**
+            **Installer:** Run `DeskLock-Setup.exe` and follow the wizard. Optionally add a desktop shortcut and auto-start with Windows.
+
+            **Portable:** Unzip `DeskLock-Windows.zip` to a folder, run `DeskLock.exe`. If SmartScreen appears: click **More info** > **Run anyway**.
           generate_release_notes: true

@@ -143,6 +143,50 @@ public static class NativeInterop
             && win == HotkeyWin;
     }
 
+    // --- Blur Behind Window ---
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttribData data);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct WindowCompositionAttribData
+    {
+        public int Attribute;
+        public IntPtr Data;
+        public int SizeOfData;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AccentPolicy
+    {
+        public int AccentState;
+        public int AccentFlags;
+        public uint GradientColor;
+        public int AnimationId;
+    }
+
+    public static void EnableWindowBlur(IntPtr hwnd)
+    {
+        var accent = new AccentPolicy { AccentState = 3, GradientColor = 0x01000000 }; // ACCENT_ENABLE_BLURBEHIND
+        var size = Marshal.SizeOf(accent);
+        var ptr = Marshal.AllocHGlobal(size);
+        Marshal.StructureToPtr(accent, ptr, false);
+        var data = new WindowCompositionAttribData { Attribute = 19, Data = ptr, SizeOfData = size };
+        SetWindowCompositionAttribute(hwnd, ref data);
+        Marshal.FreeHGlobal(ptr);
+    }
+
+    public static void DisableWindowBlur(IntPtr hwnd)
+    {
+        var accent = new AccentPolicy { AccentState = 0 }; // ACCENT_DISABLED
+        var size = Marshal.SizeOf(accent);
+        var ptr = Marshal.AllocHGlobal(size);
+        Marshal.StructureToPtr(accent, ptr, false);
+        var data = new WindowCompositionAttribData { Attribute = 19, Data = ptr, SizeOfData = size };
+        SetWindowCompositionAttribute(hwnd, ref data);
+        Marshal.FreeHGlobal(ptr);
+    }
+
     // --- Display helpers ---
 
     public static string GetKeyName(int virtualKey)

@@ -10,6 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var hotKeyRef: EventHotKeyRef?
     private var carbonHandlerRef: EventHandlerRef?
     private var reactivationTimer: Timer?
+    private var lastToggleTime: Date = .distantPast
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -175,11 +176,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Lock/Unlock
 
     @objc func toggleLock() {
-        if isLocked {
-            unlock()
-        } else {
-            lock()
-        }
+        let now = Date()
+        guard now.timeIntervalSince(lastToggleTime) > 0.5 else { return }
+        lastToggleTime = now
+        if isLocked { unlock() } else { lock() }
     }
 
     private func lock() {

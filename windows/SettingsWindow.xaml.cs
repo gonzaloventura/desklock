@@ -29,6 +29,8 @@ public partial class SettingsWindow : Window
         ShowClockCheck.IsChecked = _settings.ShowClock;
         ShowHintCheck.IsChecked = _settings.ShowUnlockHint;
         ImageOpacitySlider.Value = _settings.BackgroundImageOpacity;
+        BgAlphaSlider.Value = _settings.BackgroundAlpha;
+        BgBlurCheck.IsChecked = _settings.BackgroundBlur;
         UpdateShortcutDisplay();
         UpdateImageUI();
     }
@@ -163,6 +165,21 @@ public partial class SettingsWindow : Window
         if (!_initialized || FontSizeLabel == null) return;
         FontSizeLabel.Text = $"{(int)e.NewValue}";
         _settings.FontSize = e.NewValue;
+        _settings.Save();
+    }
+
+    private void BgAlphaSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_initialized || BgAlphaLabel == null) return;
+        BgAlphaLabel.Text = $"{(int)(e.NewValue * 100)}%";
+        _settings.BackgroundAlpha = e.NewValue;
+        _settings.Save();
+    }
+
+    private void BgBlurCheck_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+        _settings.BackgroundBlur = BgBlurCheck.IsChecked == true;
         _settings.Save();
     }
 

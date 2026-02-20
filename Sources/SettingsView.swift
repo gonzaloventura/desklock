@@ -152,6 +152,16 @@ struct SettingsView: View {
                         .frame(width: 50)
                         .monospacedDigit()
                 }
+
+                HStack {
+                    Text("Background Opacity")
+                    Slider(value: $settings.backgroundAlpha, in: 0.1...1.0, step: 0.05)
+                    Text("\(Int(settings.backgroundAlpha * 100))%")
+                        .frame(width: 40)
+                        .monospacedDigit()
+                }
+
+                Toggle("Blur Behind Window", isOn: $settings.backgroundBlur)
             }
 
             Section {

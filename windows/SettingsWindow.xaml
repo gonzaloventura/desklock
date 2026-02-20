@@ -85,6 +85,23 @@
                                VerticalAlignment="Center" HorizontalAlignment="Right" />
                 </Grid>
 
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="120" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="40" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="Background Alpha" VerticalAlignment="Center" />
+                    <Slider x:Name="BgAlphaSlider" Grid.Column="1" Minimum="0.1" Maximum="1.0"
+                            Value="1.0" TickFrequency="0.05" IsSnapToTickEnabled="True"
+                            ValueChanged="BgAlphaSlider_ValueChanged" />
+                    <TextBlock x:Name="BgAlphaLabel" Grid.Column="2" Text="100%"
+                               VerticalAlignment="Center" HorizontalAlignment="Right" />
+                </Grid>
+
+                <CheckBox x:Name="BgBlurCheck" Content="Blur Behind Window"
+                          Margin="0,0,0,12" Checked="BgBlurCheck_Changed" Unchecked="BgBlurCheck_Changed" />
+
                 <Button Content="Reset to Defaults" Padding="12,6" Margin="0,16,0,0"
                         HorizontalAlignment="Left" Click="ResetDefaults_Click" />
             </StackPanel>

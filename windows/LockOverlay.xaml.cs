@@ -35,6 +35,8 @@ public partial class LockOverlay : Window
         }
         catch { BackgroundRect.Fill = new SolidColorBrush(Color.FromRgb(13, 13, 31)); }
 
+        BackgroundRect.Opacity = settings.BackgroundAlpha;
+
         Brush textBrush;
         try { textBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(settings.TextColor)); }
         catch { textBrush = Brushes.White; }
@@ -137,6 +139,14 @@ public partial class LockOverlay : Window
         Activate();
         Focus();
 
+        // Apply blur-behind if enabled
+        var settings = AppSettings.Load();
+        if (settings.BackgroundBlur)
+        {
+            var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+            NativeInterop.EnableWindowBlur(hwnd);
+        }
+
         _clockTimer.Start();
 
         var fadeIn = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(300))
@@ -149,6 +159,10 @@ public partial class LockOverlay : Window
     public void DismissOverlay(Action? onComplete = null)
     {
         _clockTimer.Stop();
+
+        // Disable blur
+        var hwnd = new System.Windows.Interop.WindowInteropHelper(this).Handle;
+        NativeInterop.DisableWindowBlur(hwnd);
 
         var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300))
         {

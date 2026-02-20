@@ -21,6 +21,7 @@ class EventEatingView: NSView {
 class OverlayWindow: NSWindow {
 
     private let eatingView = EventEatingView()
+    private let blurView = NSVisualEffectView()
 
     init() {
         let screen = NSScreen.main ?? NSScreen.screens[0]
@@ -32,26 +33,36 @@ class OverlayWindow: NSWindow {
         )
 
         self.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)) + 1)
-        self.isOpaque = true
+        self.isOpaque = false
         self.hasShadow = false
         self.isMovable = false
         self.isMovableByWindowBackground = false
         self.ignoresMouseEvents = false
         self.acceptsMouseMovedEvents = true
         self.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
-        self.backgroundColor = .black
+        self.backgroundColor = .clear
         self.hidesOnDeactivate = false
 
-        // Layer: EventEatingView at the bottom, SwiftUI overlay on top
+        // Blur behind window
+        blurView.material = .fullScreenUI
+        blurView.blendingMode = .behindWindow
+        blurView.state = .active
+        blurView.translatesAutoresizingMaskIntoConstraints = false
+
         let hostingView = NSHostingView(rootView: LockScreenView())
         hostingView.translatesAutoresizingMaskIntoConstraints = false
         eatingView.translatesAutoresizingMaskIntoConstraints = false
 
         let container = NSView(frame: screen.frame)
+        container.addSubview(blurView)
         container.addSubview(eatingView)
         container.addSubview(hostingView)
 
         NSLayoutConstraint.activate([
+            blurView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            blurView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            blurView.topAnchor.constraint(equalTo: container.topAnchor),
+            blurView.bottomAnchor.constraint(equalTo: container.bottomAnchor),
             eatingView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
             eatingView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
             eatingView.topAnchor.constraint(equalTo: container.topAnchor),
@@ -65,7 +76,20 @@ class OverlayWindow: NSWindow {
         self.contentView = container
     }
 
+    func applySettings() {
+        let settings = SettingsManager.shared
+        blurView.isHidden = !settings.backgroundBlur
+        if !settings.backgroundBlur {
+            self.isOpaque = settings.backgroundAlpha >= 1.0
+            self.backgroundColor = settings.backgroundAlpha >= 1.0 ? .black : .clear
+        } else {
+            self.isOpaque = false
+            self.backgroundColor = .clear
+        }
+    }
+
     func showOnMainScreen() {
+        applySettings()
         let screen = NSScreen.main ?? NSScreen.screens[0]
         self.setFrame(screen.frame, display: true)
         self.alphaValue = 0

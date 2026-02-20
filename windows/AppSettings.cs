@@ -15,6 +15,8 @@ public class AppSettings
     public double BackgroundImageOpacity { get; set; } = 0.3;
     public bool ShowClock { get; set; } = true;
     public bool ShowUnlockHint { get; set; } = true;
+    public double BackgroundAlpha { get; set; } = 1.0;
+    public bool BackgroundBlur { get; set; }
     public int HotkeyVirtualKey { get; set; } = 0x2E; // VK_DELETE (Supr)
     public bool HotkeyCtrl { get; set; } = true;
     public bool HotkeyShift { get; set; } = true;
@@ -76,6 +78,8 @@ public class AppSettings
         BackgroundImageOpacity = 0.3;
         ShowClock = true;
         ShowUnlockHint = true;
+        BackgroundAlpha = 1.0;
+        BackgroundBlur = false;
         HotkeyVirtualKey = 0x2E;
         HotkeyCtrl = true;
         HotkeyShift = true;

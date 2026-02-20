@@ -38,6 +38,12 @@ class SettingsManager: ObservableObject {
     @Published var showUnlockHint: Bool {
         didSet { UserDefaults.standard.set(showUnlockHint, forKey: "showUnlockHint") }
     }
+    @Published var backgroundAlpha: Double {
+        didSet { UserDefaults.standard.set(backgroundAlpha, forKey: "backgroundAlpha") }
+    }
+    @Published var backgroundBlur: Bool {
+        didSet { UserDefaults.standard.set(backgroundBlur, forKey: "backgroundBlur") }
+    }
 
     // MARK: - Hotkey
 
@@ -66,6 +72,8 @@ class SettingsManager: ObservableObject {
         self.backgroundImageOpacity = defaults.object(forKey: "backgroundImageOpacity") as? Double ?? 0.3
         self.showClock = defaults.object(forKey: "showClock") as? Bool ?? true
         self.showUnlockHint = defaults.object(forKey: "showUnlockHint") as? Bool ?? true
+        self.backgroundAlpha = defaults.object(forKey: "backgroundAlpha") as? Double ?? 1.0
+        self.backgroundBlur = defaults.object(forKey: "backgroundBlur") as? Bool ?? false
 
         // Default: Cmd+Shift+Supr (Forward Delete)
         let defaultKeyCode = UInt32(kVK_ForwardDelete)
@@ -84,6 +92,8 @@ class SettingsManager: ObservableObject {
         backgroundImageOpacity = 0.3
         showClock = true
         showUnlockHint = true
+        backgroundAlpha = 1.0
+        backgroundBlur = false
         hotkeyKeyCode = UInt32(kVK_ForwardDelete)
         hotkeyModifiers = UInt32(cmdKey | shiftKey)
     }

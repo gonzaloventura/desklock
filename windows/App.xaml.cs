@@ -16,6 +16,7 @@ public partial class App : Application
     private SettingsWindow? _settingsWindow;
     private bool _isLocked;
     private DispatcherTimer? _focusTimer;
+    private DateTime _lastToggleTime = DateTime.MinValue;
 
     private static readonly string LogFile = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -152,10 +153,9 @@ public partial class App : Application
 
     private void ToggleLock()
     {
-        if (_isLocked)
-            Unlock();
-        else
-            Lock();
+        if ((DateTime.Now - _lastToggleTime).TotalMilliseconds < 500) return;
+        _lastToggleTime = DateTime.Now;
+        if (_isLocked) Unlock(); else Lock();
     }
 
     private void Lock()

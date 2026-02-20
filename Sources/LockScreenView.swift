@@ -10,6 +10,7 @@ struct LockScreenView: View {
         GeometryReader { geometry in
             ZStack {
                 Color(nsColor: settings.backgroundColor)
+                    .opacity(settings.backgroundAlpha)
                     .ignoresSafeArea()
 
                 if let imagePath = settings.backgroundImagePath,
