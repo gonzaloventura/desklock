@@ -27,7 +27,13 @@ class SettingsManager: ObservableObject {
         didSet { UserDefaults.standard.set(Double(fontSize), forKey: "fontSize") }
     }
     @Published var backgroundImagePath: String? {
-        didSet { UserDefaults.standard.set(backgroundImagePath, forKey: "backgroundImagePath") }
+        didSet {
+            if let path = backgroundImagePath {
+                UserDefaults.standard.set(path, forKey: "backgroundImagePath")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "backgroundImagePath")
+            }
+        }
     }
     @Published var backgroundImageOpacity: Double {
         didSet { UserDefaults.standard.set(backgroundImageOpacity, forKey: "backgroundImageOpacity") }
