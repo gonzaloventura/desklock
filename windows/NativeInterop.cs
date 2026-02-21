@@ -106,11 +106,19 @@ public static class NativeInterop
                     System.Windows.Application.Current?.Dispatcher.BeginInvoke(() => OnToggleLock?.Invoke());
                     return (IntPtr)1; // block the hotkey itself
                 }
-            }
 
-            if (IsLocked)
+                if (IsLocked)
+                {
+                    return (IntPtr)1; // block key-down events when locked
+                }
+            }
+            else if (IsLocked)
             {
-                return (IntPtr)1; // block everything when locked
+                // Allow key-up events through even when locked so that
+                // modifier key state (Ctrl, Shift, etc.) stays consistent.
+                // Blocking key-ups caused GetAsyncKeyState to report modifiers
+                // as still pressed after unlock, making the hotkey trigger
+                // with just the main key alone.
             }
         }
 

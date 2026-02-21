@@ -86,18 +86,24 @@ public partial class LockOverlay : Window
             try
             {
                 var bitmap = new BitmapImage(new Uri(settings.BackgroundImagePath));
-                BackgroundImage.Source = bitmap;
-                BackgroundImage.Opacity = settings.BackgroundImageOpacity;
-                BackgroundImage.Visibility = Visibility.Visible;
+                var brush = new ImageBrush(bitmap)
+                {
+                    Stretch = Stretch.UniformToFill,
+                    AlignmentX = AlignmentX.Center,
+                    AlignmentY = AlignmentY.Center
+                };
+                BackgroundImageRect.Fill = brush;
+                BackgroundImageRect.Opacity = settings.BackgroundImageOpacity;
+                BackgroundImageRect.Visibility = Visibility.Visible;
             }
             catch
             {
-                BackgroundImage.Visibility = Visibility.Collapsed;
+                BackgroundImageRect.Visibility = Visibility.Collapsed;
             }
         }
         else
         {
-            BackgroundImage.Visibility = Visibility.Collapsed;
+            BackgroundImageRect.Visibility = Visibility.Collapsed;
         }
     }
 

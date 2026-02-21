@@ -14,10 +14,9 @@
         <Rectangle x:Name="BackgroundRect" Fill="#0D0D1F" />
 
         <!-- Background image -->
-        <Image x:Name="BackgroundImage"
-               Stretch="UniformToFill"
-               Opacity="0.3"
-               Visibility="Collapsed" />
+        <Rectangle x:Name="BackgroundImageRect"
+                   Opacity="0.3"
+                   Visibility="Collapsed" />
 
         <!-- Content -->
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
