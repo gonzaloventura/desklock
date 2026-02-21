@@ -9,7 +9,9 @@ public static class NativeInterop
     private const int WH_KEYBOARD_LL = 13;
     private const int WH_MOUSE_LL = 14;
     private const int WM_KEYDOWN = 0x0100;
+    private const int WM_KEYUP = 0x0101;
     private const int WM_SYSKEYDOWN = 0x0104;
+    private const int WM_SYSKEYUP = 0x0105;
 
     // --- Virtual key codes ---
     public const int VK_CONTROL = 0x11;
@@ -33,9 +35,6 @@ public static class NativeInterop
     [DllImport("kernel32.dll")]
     private static extern IntPtr GetModuleHandle(string? lpModuleName);
 
-    [DllImport("user32.dll")]
-    private static extern short GetAsyncKeyState(int vKey);
-
     [StructLayout(LayoutKind.Sequential)]
     private struct KBDLLHOOKSTRUCT
     {
@@ -51,6 +50,13 @@ public static class NativeInterop
     private static IntPtr _mouseHook = IntPtr.Zero;
     private static LowLevelProc? _keyboardProc;
     private static LowLevelProc? _mouseProc;
+
+    // Modifier state tracked directly from hook events so hotkey
+    // detection works even when key events are being blocked.
+    private static bool _ctrlDown;
+    private static bool _shiftDown;
+    private static bool _altDown;
+    private static bool _winDown;
 
     public static bool IsLocked { get; set; }
 
@@ -98,27 +104,40 @@ public static class NativeInterop
         if (nCode >= 0)
         {
             int msg = wParam.ToInt32();
-            if (msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN)
+            bool isKeyDown = msg == WM_KEYDOWN || msg == WM_SYSKEYDOWN;
+            bool isKeyUp = msg == WM_KEYUP || msg == WM_SYSKEYUP;
+
+            if (isKeyDown || isKeyUp)
             {
                 var hookStruct = Marshal.PtrToStructure<KBDLLHOOKSTRUCT>(lParam);
-                if (IsHotkeyCombination(hookStruct.vkCode))
+
+                // Always track modifier state before blocking so that
+                // hotkey detection works even when locked.
+                switch ((int)hookStruct.vkCode)
+                {
+                    case VK_CONTROL: case 0xA2: case 0xA3: // generic / L / R
+                        _ctrlDown = isKeyDown; break;
+                    case VK_SHIFT: case 0xA0: case 0xA1:
+                        _shiftDown = isKeyDown; break;
+                    case VK_MENU: case 0xA4: case 0xA5:
+                        _altDown = isKeyDown; break;
+                    case VK_LWIN: case VK_RWIN:
+                        _winDown = isKeyDown; break;
+                }
+
+                if (isKeyDown && IsHotkeyCombination(hookStruct.vkCode))
                 {
                     System.Windows.Application.Current?.Dispatcher.BeginInvoke(() => OnToggleLock?.Invoke());
                     return (IntPtr)1; // block the hotkey itself
                 }
 
-                if (IsLocked)
+                if (IsLocked && isKeyDown)
                 {
                     return (IntPtr)1; // block key-down events when locked
                 }
-            }
-            else if (IsLocked)
-            {
-                // Allow key-up events through even when locked so that
-                // modifier key state (Ctrl, Shift, etc.) stays consistent.
-                // Blocking key-ups caused GetAsyncKeyState to report modifiers
-                // as still pressed after unlock, making the hotkey trigger
-                // with just the main key alone.
+
+                // Key-up events pass through so modifier state stays
+                // consistent in Windows after unlock.
             }
         }
 
@@ -140,15 +159,13 @@ public static class NativeInterop
         if (vkCode != (uint)HotkeyVirtualKey)
             return false;
 
-        bool ctrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-        bool shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
-        bool alt = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
-        bool win = (GetAsyncKeyState(VK_LWIN) & 0x8000) != 0 || (GetAsyncKeyState(VK_RWIN) & 0x8000) != 0;
-
-        return ctrl == HotkeyCtrl
-            && shift == HotkeyShift
-            && alt == HotkeyAlt
-            && win == HotkeyWin;
+        // Use hook-tracked modifier state instead of GetAsyncKeyState.
+        // GetAsyncKeyState can be unreliable when key events are blocked
+        // by the hook (modifiers may appear stuck or missing).
+        return _ctrlDown == HotkeyCtrl
+            && _shiftDown == HotkeyShift
+            && _altDown == HotkeyAlt
+            && _winDown == HotkeyWin;
     }
 
     // --- Blur Behind Window ---
