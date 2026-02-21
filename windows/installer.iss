@@ -13,7 +13,7 @@ Compression=lzma2
 SolidCompression=yes
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=lowest
-SetupIconFile=windows\DeskLock.ico
+SetupIconFile=DeskLock.ico
 WizardStyle=modern
 
 [Files]
